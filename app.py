@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import io
 
 # =============================
 # Streamlit Page Configuration
@@ -43,10 +42,11 @@ input_mode = st.radio(
     horizontal=True
 )
 
+jobs_data = []
+
 # ========== MODE 1: MANUAL ENTRY ==========
 if input_mode == "Manual Entry":
-    num_jobs = st.number_input("Enter number of jobs:", min_value=1, max_value=15, value=5)
-    jobs_data = []
+    num_jobs = st.number_input("Enter number of jobs:", min_value=1, max_value=100, value=5)
     st.info("Enter Job ID, Deadline, and Profit for each job below:")
 
     for i in range(num_jobs):
@@ -54,20 +54,22 @@ if input_mode == "Manual Entry":
         with col1:
             job_id = st.text_input(f"Job {i+1} ID:", value=f"J{i+1}", key=f"id_{i}")
         with col2:
-            deadline = st.number_input(f"Deadline for {job_id}:", min_value=1, max_value=10, value=min(i+2, 10), key=f"dl_{i}")
+            deadline = st.number_input(f"Deadline for {job_id}:", min_value=1, max_value=100, value=min(i+2, 100), key=f"dl_{i}")
         with col3:
-            profit = st.number_input(f"Profit for {job_id}:", min_value=1, max_value=500, value=(i+1)*10, key=f"pf_{i}")
+            profit = st.number_input(f"Profit for {job_id}:", min_value=1, max_value=10000, value=(i+1)*10, key=f"pf_{i}")
         jobs_data.append({"Job ID": job_id, "Deadline": int(deadline), "Profit": int(profit)})
 
 # ========== MODE 2: CSV UPLOAD ==========
 elif input_mode == "CSV Upload":
     st.info("Upload a CSV file with columns: Job ID, Deadline, Profit")
     uploaded_file = st.file_uploader("Choose CSV file", type="csv")
-    jobs_data = []
     if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.dataframe(df, use_container_width=True)
-        jobs_data = df.to_dict(orient="records")
+        try:
+            df = pd.read_csv(uploaded_file)
+            st.dataframe(df, use_container_width=True)
+            jobs_data = df.to_dict(orient="records")
+        except:
+            st.error("⚠️ Error reading CSV. Ensure it has columns: Job ID, Deadline, Profit")
 
 # ========== MODE 3: CUSTOM TEXT INPUT ==========
 elif input_mode == "Custom Text Input":
@@ -76,7 +78,6 @@ elif input_mode == "Custom Text Input":
         "Example:\nJ1,2,60\nJ2,1,100\nJ3,3,20\nJ4,2,40\nJ5,1,20",
         height=150,
     )
-    jobs_data = []
     if text_input.strip():
         try:
             for line in text_input.strip().split("\n"):
@@ -108,8 +109,7 @@ with col_run:
         st.session_state.jobs_data = jobs_data
         st.session_state.run_clicked = True
 with col_reset:
-    if st.button("🔄 Reset"):
-        reset_app()
+    st.button("🔄 Reset", on_click=reset_app)
 
 # ===================================
 # STEP 3: Algorithm Execution
@@ -118,7 +118,6 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
     st.success("Algorithm executed successfully!")
 
     sorted_jobs = sorted(st.session_state.jobs_data, key=lambda x: x["Profit"], reverse=True)
-
     max_deadline = max(job["Deadline"] for job in sorted_jobs)
     slots = [-1] * (max_deadline + 1)
     total_profit = 0
@@ -145,6 +144,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
 
     # Visualization: Timeline
     st.header("📈 Step 3: Job Scheduling Timeline")
+    st.markdown("Each bar represents a time slot and the job scheduled in it.")
 
     fig = go.Figure()
     for i, job in enumerate(scheduled_jobs):
