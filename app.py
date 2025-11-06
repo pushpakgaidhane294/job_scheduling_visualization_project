@@ -10,7 +10,7 @@ st.title("💼 Job Sequencing with Deadlines — DAA Mini Project")
 
 st.markdown("""
 This project demonstrates the **Greedy Algorithm** for solving the  
-**Job Sequencing with Deadlines** problem, implemented in **Python (converted from your C code)**.  
+**Job Sequencing with Deadlines** problem, implemented in **Python**.  
 
 🧩 **Goal:** Schedule jobs to maximize profit such that each job finishes before its deadline.
 """)
