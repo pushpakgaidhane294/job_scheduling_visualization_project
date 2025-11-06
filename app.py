@@ -2,118 +2,122 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# Page setup
-st.set_page_config(page_title="Job Sequencing", layout="wide")
-st.title("💼 Job Sequencing with Deadlines — Greedy Algorithm")
+# =============================
+# Streamlit Page Configuration
+# =============================
+st.set_page_config(page_title="Job Sequencing Visualization", layout="wide")
+st.title("💼 Job Sequencing with Deadlines — DAA Mini Project")
 
 st.markdown("""
-This app solves the **Job Sequencing with Deadlines** problem using a **Greedy Algorithm**.
+This project demonstrates the **Greedy Algorithm** for solving the  
+**Job Sequencing with Deadlines** problem, implemented in **Python (converted from your C code)**.  
 
-🧩 **Goal:** Schedule jobs to maximize profit, ensuring each job finishes before its deadline.
+🧩 **Goal:** Schedule jobs to maximize profit such that each job finishes before its deadline.
 """)
 
-# Session state
+# ===================================
+# SESSION STATE INITIALIZATION
+# ===================================
 if "jobs_data" not in st.session_state:
     st.session_state.jobs_data = []
 if "run_clicked" not in st.session_state:
     st.session_state.run_clicked = False
 
-# Reset function
+# ===================================
+# RESET FUNCTION
+# ===================================
 def reset_app():
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
     st.session_state.jobs_data = []
     st.session_state.run_clicked = False
     st.experimental_rerun()
 
-# Input section
-st.header("🔹 Step 1: Input Jobs")
-input_mode = st.radio("Select Input Mode:", ("Manual Entry", "CSV Upload", "Text Input"), horizontal=True)
+# ===================================
+# STEP 1: INPUT JOB DATA
+# ===================================
+st.header("🔹 Step 1: Enter Job Details")
+
+num_jobs = st.number_input("Enter number of jobs:", min_value=1, max_value=15, value=5)
 jobs_data = []
 
-if input_mode == "Manual Entry":
-    num_jobs = st.number_input("Number of jobs:", min_value=1, max_value=100, value=5)
-    st.info("Enter Job ID, Deadline, and Profit:")
-    for i in range(num_jobs):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            job_id = st.text_input(f"Job {i+1} ID", value=f"J{i+1}", key=f"id_{i}")
-        with col2:
-            deadline = st.number_input(f"Deadline for {job_id}", min_value=1, max_value=100, value=min(i+2, 100), key=f"dl_{i}")
-        with col3:
-            profit = st.number_input(f"Profit for {job_id}", min_value=1, max_value=10000, value=(i+1)*10, key=f"pf_{i}")
-        jobs_data.append({"Job ID": job_id, "Deadline": int(deadline), "Profit": int(profit)})
+st.info("Enter Job ID, Deadline, and Profit for each job below:")
 
-elif input_mode == "CSV Upload":
-    st.info("Upload CSV with columns: Job ID, Deadline, Profit")
-    uploaded_file = st.file_uploader("Upload CSV", type="csv")
-    if uploaded_file:
-        try:
-            df = pd.read_csv(uploaded_file)
-            st.dataframe(df, use_container_width=True)
-            jobs_data = df.to_dict(orient="records")
-        except:
-            st.error("⚠️ Invalid CSV format.")
+for i in range(num_jobs):
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        job_id = st.text_input(f"Job {i+1} ID:", value=f"J{i+1}", key=f"id_{i}")
+    with col2:
+        deadline = st.number_input(f"Deadline for {job_id}:", min_value=1, max_value=10, value=min(i+2, 10), key=f"dl_{i}")
+    with col3:
+        profit = st.number_input(f"Profit for {job_id}:", min_value=1, max_value=500, value=(i+1)*10, key=f"pf_{i}")
+    jobs_data.append({"Job ID": job_id, "Deadline": int(deadline), "Profit": int(profit)})
 
-elif input_mode == "Text Input":
-    st.info("Enter jobs as: JobID,Deadline,Profit (one per line)")
-    text_input = st.text_area("Example:\nJ1,2,60\nJ2,1,100\nJ3,3,20", height=150)
-    if text_input.strip():
-        try:
-            for line in text_input.strip().split("\n"):
-                parts = line.strip().split(",")
-                if len(parts) == 3:
-                    jobs_data.append({
-                        "Job ID": parts[0].strip(),
-                        "Deadline": int(parts[1].strip()),
-                        "Profit": int(parts[2].strip())
-                    })
-            st.success(f"{len(jobs_data)} jobs added.")
-        except:
-            st.error("⚠️ Invalid format.")
+df_jobs = pd.DataFrame(jobs_data)
+st.write("### 📋 Job Table")
+st.dataframe(df_jobs, use_container_width=True)
 
-# Display input
-if jobs_data:
-    df_jobs = pd.DataFrame(jobs_data)
-    st.write("### 📋 Job Table")
-    st.dataframe(df_jobs, use_container_width=True)
+# ===================================
+# STEP 2: Run / Reset Buttons
+# ===================================
+st.header("🚀 Step 2: Run / Reset Algorithm")
 
-# Buttons
-st.header("🚀 Step 2: Run / Reset")
 col_run, col_reset = st.columns(2)
 with col_run:
     if st.button("▶️ Run Algorithm"):
         st.session_state.jobs_data = jobs_data
         st.session_state.run_clicked = True
 with col_reset:
-    st.button("🔄 Reset", on_click=reset_app)
+    if st.button("🔄 Reset"):
+        reset_app()
 
-# Algorithm execution
+# ===================================
+# STEP 3: Algorithm (Converted from C)
+# ===================================
 if st.session_state.run_clicked and st.session_state.jobs_data:
-    st.success("✅ Algorithm executed!")
+    st.success("✅ Algorithm executed successfully!")
 
+    # Sort jobs by profit (descending)
     jobs = sorted(st.session_state.jobs_data, key=lambda x: x["Profit"], reverse=True)
-    max_deadline = max(job["Deadline"] for job in jobs)
-    slots = [None] * (max_deadline + 1)
-    total_profit = 0
-    scheduled_jobs = []
 
+    # Find maximum deadline
+    max_deadline = max(job["Deadline"] for job in jobs)
+    slots = [-1] * (max_deadline + 1)  # index 0 unused
+
+    total_profit = 0
+    jobs_done = 0
+
+    # Schedule jobs similar to your C code logic
     for job in jobs:
         for j in range(job["Deadline"], 0, -1):
-            if slots[j] is None:
-                slots[j] = job
+            if slots[j] == -1:
+                slots[j] = job["Job ID"]
                 total_profit += job["Profit"]
-                scheduled_jobs.append(job)
+                jobs_done += 1
                 break
 
-    st.subheader("📊 Scheduled Jobs")
-    st.dataframe(pd.DataFrame(scheduled_jobs), use_container_width=True)
+    # Prepare scheduled job list (in order of slots)
+    scheduled_jobs = []
+    for j in range(1, max_deadline + 1):
+        if slots[j] != -1:
+            job = next(job for job in jobs if job["Job ID"] == slots[j])
+            scheduled_jobs.append(job)
+
+    # ===================================
+    # STEP 4: Display Results
+    # ===================================
+    st.subheader("📊 Scheduled Jobs (In Execution Order)")
+    scheduled_df = pd.DataFrame(scheduled_jobs)
+    st.dataframe(scheduled_df, use_container_width=True)
 
     col1, col2 = st.columns(2)
-    col1.metric("✅ Jobs Scheduled", len(scheduled_jobs))
+    col1.metric("✅ Total Jobs Done", jobs_done)
     col2.metric("💰 Total Profit", f"₹{total_profit}")
 
-    # Timeline plot
-    st.header("📈 Job Scheduling Timeline")
-    st.markdown("Each bar shows a time slot and the job assigned to it.")
+    # ===================================
+    # STEP 5: Timeline Visualization
+    # ===================================
+    st.header("📈 Step 3: Job Scheduling Timeline")
 
     fig = go.Figure()
     for i, job in enumerate(scheduled_jobs):
@@ -122,7 +126,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
             y=[f"Slot {i+1}"],
             orientation='h',
             name=job["Job ID"],
-            text=f"{job['Job ID']} (₹{job['Profit']})",
+            text=f"{job['Job ID']} (P={job['Profit']})",
             textposition='inside'
         ))
 
@@ -135,8 +139,11 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # Visual blocks
-    st.header("🧱 Job Sequence Blocks")
+    # ===================================
+    # STEP 6: Visual Job Path (Boxes)
+    # ===================================
+    st.header("🧱 Step 4: Job Sequence Path (Visual Blocks)")
+
     job_path = " ➜ ".join([job["Job ID"] for job in scheduled_jobs])
     st.markdown(f"<h4 style='text-align:center;color:#2E86C1;'> {job_path} </h4>", unsafe_allow_html=True)
 
@@ -156,10 +163,13 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
                 unsafe_allow_html=True
             )
 
-# Footer
+# ===================================
+# FOOTER
+# ===================================
 st.markdown("""
 ---
-📘 **Summary:**  
-This app uses a greedy strategy to schedule jobs for maximum profit under deadline constraints.  
-Perfect for DAA mini-projects and algorithm visualization.
+📘 **About:**  
+This algorithm uses a **Greedy strategy** to schedule jobs in decreasing profit order,  
+placing each job in the latest available slot before its deadline —  
+exactly like the classic C algorithm implementation.
 """)
