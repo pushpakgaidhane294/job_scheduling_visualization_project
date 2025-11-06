@@ -170,6 +170,5 @@ st.markdown("""
 ---
 📘 **About:**  
 This algorithm uses a **Greedy strategy** to schedule jobs in decreasing profit order,  
-placing each job in the latest available slot before its deadline —  
-exactly like the classic C algorithm implementation.
+placing each job in the latest available slot before its deadline.
 """)
