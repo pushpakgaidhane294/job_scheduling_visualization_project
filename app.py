@@ -2,9 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-# =============================
 # Streamlit Page Configuration
-# =============================
+
 st.set_page_config(page_title="Job Sequencing Visualization", layout="wide")
 st.title("💼 Job Sequencing with Deadlines — DAA Mini Project")
 
@@ -15,17 +14,15 @@ This project demonstrates the **Greedy Algorithm** for solving the
 🧩 **Goal:** Schedule jobs to maximize profit such that each job finishes before its deadline.
 """)
 
-# ===================================
+
 # SESSION STATE INITIALIZATION
-# ===================================
 if "jobs_data" not in st.session_state:
     st.session_state.jobs_data = []
 if "run_clicked" not in st.session_state:
     st.session_state.run_clicked = False
 
-# ===================================
 # RESET FUNCTION (Fixed for latest Streamlit)
-# ===================================
+
 def reset_app():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
@@ -33,9 +30,7 @@ def reset_app():
     st.session_state.run_clicked = False
     st.rerun()  # ✅ fixed: no experimental_rerun()
 
-# ===================================
 # STEP 1: INPUT JOB DATA
-# ===================================
 st.header("🔹 Step 1: Enter Job Details")
 
 num_jobs = st.number_input("Enter number of jobs:", min_value=1, max_value=15, value=5)
@@ -57,9 +52,7 @@ df_jobs = pd.DataFrame(jobs_data)
 st.write("### 📋 Job Table")
 st.dataframe(df_jobs, use_container_width=True)
 
-# ===================================
 # STEP 2: Run / Reset Buttons
-# ===================================
 st.header("🚀 Step 2: Run / Reset Algorithm")
 
 col_run, col_reset = st.columns(2)
@@ -71,9 +64,7 @@ with col_reset:
     if st.button("🔄 Reset"):
         reset_app()
 
-# ===================================
-# STEP 3: Algorithm (Converted from C)
-# ===================================
+# STEP 3: Algorithm 
 if st.session_state.run_clicked and st.session_state.jobs_data:
     st.success("✅ Algorithm executed successfully!")
 
@@ -103,9 +94,8 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
             job = next(job for job in jobs if job["Job ID"] == slots[j])
             scheduled_jobs.append(job)
 
-    # ===================================
     # STEP 4: Display Results
-    # ===================================
+    
     st.subheader("📊 Scheduled Jobs (In Execution Order)")
     scheduled_df = pd.DataFrame(scheduled_jobs)
     st.dataframe(scheduled_df, use_container_width=True)
@@ -114,9 +104,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
     col1.metric("✅ Total Jobs Done", jobs_done)
     col2.metric("💰 Total Profit", f"₹{total_profit}")
 
-    # ===================================
     # STEP 5: Timeline Visualization
-    # ===================================
     st.header("📈 Step 3: Job Scheduling Timeline")
 
     fig = go.Figure()
@@ -139,9 +127,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
     )
     st.plotly_chart(fig, use_container_width=True)
 
-    # ===================================
     # STEP 6: Visual Job Path (Boxes)
-    # ===================================
     st.header("🧱 Step 4: Job Sequence Path (Visual Blocks)")
 
     job_path = " ➜ ".join([job["Job ID"] for job in scheduled_jobs])
@@ -163,9 +149,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
                 unsafe_allow_html=True
             )
 
-# ===================================
 # FOOTER
-# ===================================
 st.markdown("""
 ---
 📘 **About:**  
