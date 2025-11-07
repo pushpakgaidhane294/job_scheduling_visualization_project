@@ -78,7 +78,7 @@ if st.session_state.run_clicked and st.session_state.jobs_data:
     total_profit = 0
     jobs_done = 0
 
-    # Schedule jobs similar to your C code logic
+    # Schedule jobs 
     for job in jobs:
         for j in range(job["Deadline"], 0, -1):
             if slots[j] == -1:
