@@ -21,14 +21,13 @@ if "jobs_data" not in st.session_state:
 if "run_clicked" not in st.session_state:
     st.session_state.run_clicked = False
 
-# RESET FUNCTION (Fixed for latest Streamlit)
-
+# RESET FUNCTION 
 def reset_app():
     for key in list(st.session_state.keys()):
         del st.session_state[key]
     st.session_state.jobs_data = []
     st.session_state.run_clicked = False
-    st.rerun()  # ✅ fixed: no experimental_rerun()
+    st.rerun()  
 
 # STEP 1: INPUT JOB DATA
 st.header("🔹 Step 1: Enter Job Details")
